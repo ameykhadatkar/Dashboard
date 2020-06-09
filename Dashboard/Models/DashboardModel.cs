@@ -7,6 +7,7 @@ namespace Dashboard.Models
 {
     public class DashboardModel
     {
+        public int SortOrder { get; set; }
         public string InstanceName { get; set; }
         public string SubDomain { get; set; }
         public int Departmentid { get; set; }

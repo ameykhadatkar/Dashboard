@@ -16,19 +16,28 @@ namespace Dashboard.Service
     {
         public List<DashboardModel> GetDahsboardData(string filter)
         {
-            //List<string> instances = AppConfiguration.InstanceData.Data.Select(x => x.EOfficeInstancesUrl).ToList();
-
             List<DashboardModel> data = new List<DashboardModel>();
             Parallel.ForEach(AppConfiguration.InstanceData.Data, (instance) =>
             {
                 data.AddRange(TransformModel(instance.EOfficeInstancesUrl, filter, instance.InstanceName));
             });
+
+            //var totalRow = new DashboardModel();
+            //totalRow.InstanceName = "Totals";
+            //totalRow.ElectronicFileClosed = data.Where(x => x != null).Sum(x => x.ElectronicFileClosed);
+            //totalRow.ElectronicFileCreated = data.Where(x => x != null).Sum(x => x.ElectronicFileCreated);
+            //totalRow.ElectronicFilePending = data.Where(x => x != null).Sum(x => x.ElectronicFilePending);
+            //totalRow.ElectronicReceiptCreated = data.Where(x => x != null).Sum(x => x.ElectronicReceiptCreated);
+            //totalRow.SortOrder = 1;
+            //data.Add(totalRow);
+
             return data;
         }
 
         public List<DashboardModel> GetInstanceData(string filter, string subdomain)
         {
             var data = TransformModel(subdomain, filter, string.Empty);
+
             return data;
         }
 
