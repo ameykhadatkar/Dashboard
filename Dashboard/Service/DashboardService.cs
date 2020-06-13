@@ -19,17 +19,11 @@ namespace Dashboard.Service
             List<DashboardModel> data = new List<DashboardModel>();
             Parallel.ForEach(AppConfiguration.InstanceData.Data, (instance) =>
             {
+                //foreach (var instance in AppConfiguration.InstanceData.Data)
+                //{
                 data.AddRange(TransformModel(instance.EOfficeInstancesUrl, filter, instance.InstanceName));
+                //}
             });
-
-            //var totalRow = new DashboardModel();
-            //totalRow.InstanceName = "Totals";
-            //totalRow.ElectronicFileClosed = data.Where(x => x != null).Sum(x => x.ElectronicFileClosed);
-            //totalRow.ElectronicFileCreated = data.Where(x => x != null).Sum(x => x.ElectronicFileCreated);
-            //totalRow.ElectronicFilePending = data.Where(x => x != null).Sum(x => x.ElectronicFilePending);
-            //totalRow.ElectronicReceiptCreated = data.Where(x => x != null).Sum(x => x.ElectronicReceiptCreated);
-            //totalRow.SortOrder = 1;
-            //data.Add(totalRow);
 
             return data;
         }
@@ -45,6 +39,8 @@ namespace Dashboard.Service
         {
             var result = new List<DashboardModel>();
 
+            var FILECREATEDUSERWISE = GetApiData(instanceUrl, AppConfiguration.FILECREATEDUSERWISE);
+
             if (filter == "Instance")
             {
                 var FILECREATEDINSTANCEWISE = GetApiData(instanceUrl, AppConfiguration.FILECREATEDINSTANCEWISE);
@@ -52,6 +48,11 @@ namespace Dashboard.Service
                 var FILECLOSEDINSTANCEWISE = GetApiData(instanceUrl, AppConfiguration.FILECLOSEDINSTANCEWISE);
                 var RECEIPTCREATEDINSTANCEWISE = GetApiData(instanceUrl, AppConfiguration.RECEIPTCREATEDINSTANCEWISE);
                 result = GetAggregateData(FILECREATEDINSTANCEWISE, FILEPENDINGINSTANCEWISE, FILECLOSEDINSTANCEWISE, RECEIPTCREATEDINSTANCEWISE);
+
+                result.ForEach((x) =>
+                {
+                    x.UserCount = FILECREATEDUSERWISE.Count;
+                });
             }
             else if (filter == "Department")
             {
@@ -60,6 +61,11 @@ namespace Dashboard.Service
                 var FILESCLOSEDDEPARTMENTWISE = GetApiData(instanceUrl, AppConfiguration.FILESCLOSEDDEPARTMENTWISE);
                 var RECEIPTCREATEDDEPARTMENTWISE = GetApiData(instanceUrl, AppConfiguration.RECEIPTCREATEDDEPARTMENTWISE);
                 result = GetAggregateData(FILECREATEDDEPARTMENTWISE, FILEPENDINGDEPARTMENTWISE, FILESCLOSEDDEPARTMENTWISE, RECEIPTCREATEDDEPARTMENTWISE);
+
+                result.ForEach((x) =>
+                {
+                    x.UserCount = FILECREATEDUSERWISE.Count(f => f.DepartmentName.Trim() == x.DepartmentName.Trim());
+                });
             }
             else if (filter == "Section")
             {
@@ -70,7 +76,7 @@ namespace Dashboard.Service
                 result = GetAggregateData(FILECREATEDSECTIONWISE, FILEPENDINGSECTIONWISE, FILECLOSEDSECTIONWISE, RECEIPTCREATEDSECTIONWISE);
             }
 
-            result.ForEach((x) => 
+            result.ForEach((x) =>
             {
                 x.SubDomain = instanceUrl;
                 x.InstanceName = instanceName;
@@ -96,11 +102,11 @@ namespace Dashboard.Service
                 {
                     Departmentid = departmentId,
                     DepartmentName = allData.Where(x => x.Departmentid == departmentId).FirstOrDefault()?.DepartmentName,
-                    ElectronicFileCreated  = fileCreatedData.FirstOrDefault(x => x.Departmentid  == departmentId)?.ElectronicFileCreated ?? 0,
+                    ElectronicFileCreated = fileCreatedData.FirstOrDefault(x => x.Departmentid == departmentId)?.ElectronicFileCreated ?? 0,
                     ElectronicFileClosed = fileClosedData.FirstOrDefault(x => x.Departmentid == departmentId)?.ElectronicFileClosed,
                     ElectronicFilePending = filePendingData.FirstOrDefault(x => x.Departmentid == departmentId)?.ElectronicFilePending,
                     PhysicalFileCreated = fileCreatedData.FirstOrDefault(x => x.Departmentid == departmentId)?.PhysicalFileCreated,
-                    PhysicalFileClosed  = fileClosedData.FirstOrDefault(x => x.Departmentid == departmentId)?.PhysicalFileClosed,
+                    PhysicalFileClosed = fileClosedData.FirstOrDefault(x => x.Departmentid == departmentId)?.PhysicalFileClosed,
                     PhysicalFilePending = filePendingData.FirstOrDefault(x => x.Departmentid == departmentId)?.PhysicalFilePending,
                     ElectronicReceiptCreated = recptCreatedData.FirstOrDefault(x => x.Departmentid == departmentId)?.ElectronicReceiptCreated,
                     PhysicalReceiptCreated = recptCreatedData.FirstOrDefault(x => x.Departmentid == departmentId)?.PhysicalReceiptCreated
@@ -176,6 +182,9 @@ namespace Dashboard.Service
                                 case AppConfiguration.RECEIPTCREATEDSECTIONWISE:
                                     dashboardModel.ElectronicReceiptCreated = Convert.ToInt32(row.Column.FirstOrDefault(x => x.Name == "ElectronicReceipt").Text);
                                     dashboardModel.PhysicalReceiptCreated = Convert.ToInt32(row.Column.FirstOrDefault(x => x.Name == "PhysicalReceipt").Text);
+                                    break;
+                                case AppConfiguration.FILECREATEDUSERWISE:
+                                    dashboardModel.EmployeeName = Convert.ToString(row.Column.FirstOrDefault(x => x.Name == "EmployeeName").Text);
                                     break;
                                 default:
                                     break;

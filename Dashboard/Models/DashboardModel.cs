@@ -13,6 +13,8 @@ namespace Dashboard.Models
         public int Departmentid { get; set; }
         public string DepartmentName { get; set; }
 
+        public long UserCount { get; set; }
+
         public int? ElectronicFilePending { get; set; }
         public int? PhysicalFilePending { get; set; }
         public int? PendingTotal { get; set; }
@@ -28,5 +30,8 @@ namespace Dashboard.Models
         public int? ElectronicReceiptCreated { get; set; }
         public int? PhysicalReceiptCreated { get; set; }
         public int? ReceiptsCreatedTotal { get; set; }
+
+
+        public string EmployeeName { get; set; }
     }
 }
